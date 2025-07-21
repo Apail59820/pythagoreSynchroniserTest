@@ -60,7 +60,7 @@ func main() {
 				ref, token, err := services.SendInvoiceToFNE(req, "")
 				if err != nil {
 					log.Printf("envoi FNE facture %d: %v", inv.ID, err)
-					continue
+					//continue
 				}
 				if err := config.AppendMetadata(config.InvoiceMetadata{
 					InvoiceID: inv.ID,
