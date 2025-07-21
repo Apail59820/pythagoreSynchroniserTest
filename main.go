@@ -3,10 +3,12 @@ package main
 import (
 	"context"
 	"log"
+	"net/http"
 	"os"
 	"os/signal"
 	"pythagoreSynchroniser/config"
 	"pythagoreSynchroniser/db"
+	"pythagoreSynchroniser/metrics"
 	"pythagoreSynchroniser/services"
 	"time"
 )
@@ -16,6 +18,20 @@ func main() {
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
+
+	sqlDB, err := db.ConnectSQL(ctx)
+	if err != nil {
+		log.Fatalf("connexion SQL: %v", err)
+	}
+	defer sqlDB.Close()
+
+	go func() {
+		http.HandleFunc("/", metrics.DashboardHandler(sqlDB))
+		log.Println("Dashboard disponible sur :8080")
+		if err := http.ListenAndServe(":8080", nil); err != nil {
+			log.Printf("serveur HTTP: %v", err)
+		}
+	}()
 
 	conn, err := db.Connect(ctx)
 	if err != nil {
