@@ -42,6 +42,10 @@ func main() {
 			return
 		case <-ticker.C:
 			invoices, err := db.FetchInvoicesAfterID(ctx, conn, lastID)
+			if len(invoices) == 0 {
+				log.Printf("Aucune nouvelle facture.")
+				continue
+			}
 			if err != nil {
 				log.Printf("erreur récupération factures: %v", err)
 				continue

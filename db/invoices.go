@@ -73,7 +73,7 @@ func FetchInvoicesAfterID(ctx context.Context, conn *pgx.Conn, lastID int) ([]mo
                foreign_currency_rate, taxes, custom_taxes, items
         FROM invoices
         WHERE id > $1
-        ORDER BY id ASC
+        ORDER BY id 
     `
 
 	rows, err := conn.Query(ctx, query, lastID)
