@@ -3,14 +3,15 @@ package db
 import (
 	"context"
 	"fmt"
-	"github.com/jackc/pgx/v5"
 	"os"
+
+	"github.com/jackc/pgx/v5"
 )
 
-var ctx = context.Background()
-
-func ConnectToPostgres() (*pgx.Conn, error) {
-	dbURL := fmt.Sprintf("postgres://%s:%s@%s:%s/%s",
+// Connect ouvre une connexion PostgreSQL en utilisant les variables d'environnement.
+func Connect(ctx context.Context) (*pgx.Conn, error) {
+	dbURL := fmt.Sprintf(
+		"postgres://%s:%s@%s:%s/%s",
 		os.Getenv("DB_USER"),
 		os.Getenv("DB_PASSWORD"),
 		os.Getenv("DB_HOST"),
@@ -22,6 +23,5 @@ func ConnectToPostgres() (*pgx.Conn, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	return conn, nil
 }
