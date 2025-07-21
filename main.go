@@ -5,12 +5,9 @@ import (
 	"log"
 	"os"
 	"os/signal"
-	"time"
-
-	"github.com/jackc/pgx/v5"
-
 	"pythagoreSynchroniser/config"
 	"pythagoreSynchroniser/db"
+	"time"
 )
 
 func main() {
