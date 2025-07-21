@@ -42,7 +42,12 @@ func SendInvoiceToFNE(invoice models.FNEInvoiceRequest, token string) (string, s
 	if err != nil {
 		return "", "", fmt.Errorf("request failed: %w", err)
 	}
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
 
 	if resp.StatusCode != http.StatusOK {
 		respBody, _ := io.ReadAll(resp.Body)
