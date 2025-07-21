@@ -48,12 +48,11 @@ func main() {
 			}
 
 			for _, inv := range invoices {
-				b, err := json.Marshal(inv)
+				_, err := json.Marshal(inv)
 				if err != nil {
 					log.Printf("marshal facture %d: %v", inv.ID, err)
 					continue
 				}
-				log.Println(string(b))
 				if inv.ID > lastID {
 					lastID = inv.ID
 				}
