@@ -1,8 +1,8 @@
 package config
 
 import (
-        "os"
-        "testing"
+	"os"
+	"testing"
 )
 
 func TestAppendMetadata(t *testing.T) {
@@ -19,20 +19,41 @@ func TestAppendMetadata(t *testing.T) {
 		return
 	}
 
-        m1 := InvoiceMetadata{InvoiceID: 1, Reference: "r1", Token: "t1"}
-        if err := AppendMetadata(m1); err != nil {
-                t.Fatalf("append1: %v", err)
-        }
-        m2 := InvoiceMetadata{InvoiceID: 2, Reference: "r2", Token: "t2"}
-        if err := AppendMetadata(m2); err != nil {
-                t.Fatalf("append2: %v", err)
-        }
+	m1 := InvoiceMetadata{InvoiceID: 1, Reference: "r1", Token: "t1"}
+	if err := AppendMetadata(m1); err != nil {
+		t.Fatalf("append1: %v", err)
+	}
+	m2 := InvoiceMetadata{InvoiceID: 2, Reference: "r2", Token: "t2"}
+	if err := AppendMetadata(m2); err != nil {
+		t.Fatalf("append2: %v", err)
+	}
 
-        list, err := LoadMetadata()
-        if err != nil {
-                t.Fatalf("load: %v", err)
-        }
-        if len(list) != 2 || list[0] != m1 || list[1] != m2 {
-                t.Fatalf("unexpected list: %+v", list)
-        }
+	list, err := LoadMetadata()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if len(list) != 2 || list[0] != m1 || list[1] != m2 {
+		t.Fatalf("unexpected list: %+v", list)
+	}
+}
+
+func TestLoadMetadataInvalidFile(t *testing.T) {
+	dir := t.TempDir()
+	wd, _ := os.Getwd()
+	defer os.Chdir(wd)
+	os.Chdir(dir)
+
+	os.MkdirAll("data/metadata", 0755)
+	err := os.WriteFile("data/metadata/bad.json", []byte("{"), 0644)
+	if err != nil {
+		t.Fatalf("write bad file: %v", err)
+	}
+
+	list, err := LoadMetadata()
+	if err != nil {
+		t.Fatalf("load: %v", err)
+	}
+	if len(list) != 0 {
+		t.Fatalf("expected empty list, got %d", len(list))
+	}
 }
