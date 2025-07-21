@@ -1,6 +1,7 @@
 package config
 
 import (
+	"fmt"
 	"github.com/joho/godotenv"
 	"log"
 	"os"
@@ -25,4 +26,32 @@ func SyncInterval() time.Duration {
 		log.Printf("intervalle invalide %q, utilisation de la valeur par défaut", v)
 	}
 	return 10 * time.Second
+}
+
+// StartDate lit la date de début dans la variable START_DATE.
+// Le format attendu est YYYY-MM-DD.
+func StartDate() (time.Time, error) {
+	v := os.Getenv("START_DATE")
+	if v == "" {
+		return time.Time{}, fmt.Errorf("START_DATE non definie")
+	}
+	t, err := time.Parse("2006-01-02", v)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("START_DATE invalide: %w", err)
+	}
+	return t, nil
+}
+
+// EndDate lit la date de fin dans la variable END_DATE.
+// Le format attendu est YYYY-MM-DD.
+func EndDate() (time.Time, error) {
+	v := os.Getenv("END_DATE")
+	if v == "" {
+		return time.Time{}, fmt.Errorf("END_DATE non definie")
+	}
+	t, err := time.Parse("2006-01-02", v)
+	if err != nil {
+		return time.Time{}, fmt.Errorf("END_DATE invalide: %w", err)
+	}
+	return t, nil
 }

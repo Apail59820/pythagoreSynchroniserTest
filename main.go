@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
@@ -38,7 +39,31 @@ func main() {
 			log.Println("Arrêt demandé, fermeture...")
 			return
 		case <-ticker.C:
-			log.Println("Récupération des factures")
+			start, err := config.StartDate()
+			if err != nil {
+				log.Printf("date de début: %v", err)
+				continue
+			}
+			end, err := config.EndDate()
+			if err != nil {
+				log.Printf("date de fin: %v", err)
+				continue
+			}
+
+			invoices, err := db.FetchInvoicesBetween(ctx, conn, start, end)
+			if err != nil {
+				log.Printf("erreur récupération factures: %v", err)
+				continue
+			}
+
+			for _, inv := range invoices {
+				b, err := json.Marshal(inv)
+				if err != nil {
+					log.Printf("marshal facture %d: %v", inv.ID, err)
+					continue
+				}
+				log.Println(string(b))
+			}
 		}
 	}
 }
