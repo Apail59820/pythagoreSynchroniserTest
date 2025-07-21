@@ -93,35 +93,7 @@ func CollectFneMetrics(db *sql.DB) (FneMetrics, error) {
 	return m, nil
 }
 
-var dashboardTmpl = template.Must(template.New("dash").Parse(`<!DOCTYPE html>
-<html>
-<head><title>FNE Metrics</title></head>
-<body>
-<h1>FNE Metrics</h1>
-<ul>
-<li>Total invoices: {{.TotalInvoices}}</li>
-<li>Sent invoices: {{.SentInvoices}}</li>
-<li>Error invoices: {{.ErrorInvoices}}</li>
-<li>Success rate: {{printf "%.2f" .SuccessRate}}%%</li>
-<li>Last invoice sent: {{.LastInvoiceID}}</li>
-</ul>
-<h2>Invoices by template</h2>
-<table border="1">
-<tr><th>Template</th><th>Count</th></tr>
-{{range $k,$v := .ByTemplate}}<tr><td>{{$k}}</td><td>{{$v}}</td></tr>{{end}}
-</table>
-<h2>Invoices by payment method</h2>
-<table border="1">
-<tr><th>Method</th><th>Count</th></tr>
-{{range $k,$v := .ByPaymentMethod}}<tr><td>{{$k}}</td><td>{{$v}}</td></tr>{{end}}
-</table>
-<h2>Invoices by point of sale</h2>
-<table border="1">
-<tr><th>POS</th><th>Count</th></tr>
-{{range $k,$v := .ByPointOfSale}}<tr><td>{{$k}}</td><td>{{$v}}</td></tr>{{end}}
-</table>
-</body>
-</html>`))
+var dashboardTmpl = template.Must(template.ParseFiles("templates/metrics.html"))
 
 // DashboardHandler renvoie un handler HTTP affichant les métriques.
 func DashboardHandler(db *sql.DB) http.HandlerFunc {

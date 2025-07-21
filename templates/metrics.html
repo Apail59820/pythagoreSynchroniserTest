@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="fr">
+    <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>FNE Metrics Dashboard</title>
+        <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    </head>
+    <body class="bg-light">
+        <div class="container my-5">
+            <h1 class="mb-4 text-center">📊 Tableau de bord - Factures FNE</h1>
+
+            <div class="row g-3">
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Total des factures</h5>
+                            <p class="display-6">{{.TotalInvoices}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Factures envoyées</h5>
+                            <p class="display-6 text-success">{{.SentInvoices}}</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Factures en erreur</h5>
+                            <p class="display-6 text-danger">{{.ErrorInvoices}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row mt-4">
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Taux de succès</h5>
+                            <div class="progress">
+                                <div class="progress-bar" role="progressbar" style="width: {{.SuccessRate}}%;" aria-valuenow="{{.SuccessRate}}" aria-valuemin="0" aria-valuemax="100">{{printf "%.2f" .SuccessRate}}%</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="card shadow-sm">
+                        <div class="card-body">
+                            <h5 class="card-title">Dernier ID envoyé</h5>
+                            <p class="display-6">{{.LastInvoiceID}}</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <h3 class="mt-5">Répartition par template</h3>
+            <table class="table table-striped table-bordered">
+                <thead class="table-light"><tr><th>Template</th><th>Factures</th></tr></thead>
+                <tbody>
+                {{range $k, $v := .ByTemplate}}<tr><td>{{$k}}</td><td>{{$v}}</td></tr>{{end}}
+                </tbody>
+            </table>
+
+            <h3 class="mt-4">Répartition par méthode de paiement</h3>
+            <table class="table table-striped table-bordered">
+                <thead class="table-light"><tr><th>Méthode</th><th>Factures</th></tr></thead>
+                <tbody>
+                {{range $k, $v := .ByPaymentMethod}}<tr><td>{{$k}}</td><td>{{$v}}</td></tr>{{end}}
+                </tbody>
+            </table>
+
+            <h3 class="mt-4">Répartition par point de vente</h3>
+            <table class="table table-striped table-bordered">
+                <thead class="table-light"><tr><th>Point de vente</th><th>Factures</th></tr></thead>
+                <tbody>
+                {{range $k, $v := .ByPointOfSale}}<tr><td>{{$k}}</td><td>{{$v}}</td></tr>{{end}}
+                </tbody>
+            </table>
+        </div>
+    </body>
+</html>
