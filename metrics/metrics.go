@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"pythagoreSynchroniser/config"
+	"pythagoreSynchroniser/logging"
 	"runtime"
 	"time"
 )
@@ -31,6 +32,7 @@ type DashboardMetrics struct {
 	Goroutines       int
 	MemoryAlloc      uint64
 	NumGC            uint32
+	Logs             []logging.Entry
 }
 
 // CollectFneMetrics calcule les statistiques d'envoi FNE.
@@ -136,6 +138,10 @@ func DashboardHandler(db *sql.DB) http.HandlerFunc {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return
 		}
+
+		lvl := logging.LevelFromString(r.URL.Query().Get("level"))
+		m.Logs = logging.Entries(lvl)
+
 		if err := dashboardTmpl.Execute(w, m); err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

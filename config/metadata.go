@@ -28,7 +28,7 @@ func LoadMetadata() ([]InvoiceMetadata, error) {
 	}
 	var list []InvoiceMetadata
 	for _, e := range entries {
-		if e.IsDir() {
+		if e.IsDir() || filepath.Ext(e.Name()) != ".json" {
 			continue
 		}
 		data, err := os.ReadFile(filepath.Join(metadataDir, e.Name()))

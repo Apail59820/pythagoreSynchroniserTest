@@ -91,6 +91,20 @@
                 {{range $k, $v := .ByPointOfSale}}<tr><td>{{$k}}</td><td>{{$v}}</td></tr>{{end}}
                 </tbody>
             </table>
+
+            <h3 class="mt-5">Journalisation</h3>
+            <form class="mb-3" method="get">
+                <label for="level" class="form-label">Niveau minimum</label>
+                <select name="level" id="level" class="form-select" onchange="this.form.submit()">
+                    <option value="debug">DEBUG</option>
+                    <option value="info">INFO</option>
+                    <option value="warn">WARN</option>
+                    <option value="error">ERROR</option>
+                </select>
+            </form>
+           <pre class="bg-dark text-light p-3" style="max-height: 400px; overflow-y: auto;">
+{{range .Logs}}{{.Time}} [{{.Level}}] {{.Message}}
+{{end}}</pre>
         </div>
     </body>
 </html>
