@@ -2,12 +2,12 @@ package main
 
 import (
 	"context"
-	"encoding/json"
 	"log"
 	"os"
 	"os/signal"
 	"pythagoreSynchroniser/config"
 	"pythagoreSynchroniser/db"
+	"pythagoreSynchroniser/services"
 	"time"
 )
 
@@ -52,10 +52,22 @@ func main() {
 			}
 
 			for _, inv := range invoices {
-				_, err := json.Marshal(inv)
+				req, err := services.ConvertInvoice(inv)
 				if err != nil {
-					log.Printf("marshal facture %d: %v", inv.ID, err)
+					log.Printf("conversion facture %d: %v", inv.ID, err)
 					continue
+				}
+				ref, token, err := services.SendInvoiceToFNE(req, "")
+				if err != nil {
+					log.Printf("envoi FNE facture %d: %v", inv.ID, err)
+					continue
+				}
+				if err := config.AppendMetadata(config.InvoiceMetadata{
+					InvoiceID: inv.ID,
+					Reference: ref,
+					Token:     token,
+				}); err != nil {
+					log.Printf("sauvegarde metadata facture %d: %v", inv.ID, err)
 				}
 				if inv.ID > lastID {
 					lastID = inv.ID
