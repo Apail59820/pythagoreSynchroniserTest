@@ -9,8 +9,16 @@ import (
 func TestAppendMetadata(t *testing.T) {
 	dir := t.TempDir()
 	wd, _ := os.Getwd()
-	defer os.Chdir(wd)
-	os.Chdir(dir)
+	defer func(dir string) {
+		err := os.Chdir(dir)
+		if err != nil {
+
+		}
+	}(wd)
+	err := os.Chdir(dir)
+	if err != nil {
+		return
+	}
 
 	m1 := InvoiceMetadata{InvoiceID: 1, Reference: "r1", Token: "t1"}
 	if err := AppendMetadata(m1); err != nil {

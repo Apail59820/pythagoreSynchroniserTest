@@ -8,8 +8,16 @@ import (
 func TestLoadLastIDNoFile(t *testing.T) {
 	dir := t.TempDir()
 	wd, _ := os.Getwd()
-	defer os.Chdir(wd)
-	os.Chdir(dir)
+	defer func(dir string) {
+		err := os.Chdir(dir)
+		if err != nil {
+
+		}
+	}(wd)
+	err := os.Chdir(dir)
+	if err != nil {
+		return
+	}
 	if id := LoadLastID(); id != 0 {
 		t.Fatalf("expected 0, got %d", id)
 	}
@@ -18,9 +26,16 @@ func TestLoadLastIDNoFile(t *testing.T) {
 func TestSaveAndLoadLastID(t *testing.T) {
 	dir := t.TempDir()
 	wd, _ := os.Getwd()
-	defer os.Chdir(wd)
-	os.Chdir(dir)
+	defer func(dir string) {
+		err := os.Chdir(dir)
+		if err != nil {
 
+		}
+	}(wd)
+	err := os.Chdir(dir)
+	if err != nil {
+		return
+	}
 	if err := SaveLastID(42); err != nil {
 		t.Fatalf("save: %v", err)
 	}
