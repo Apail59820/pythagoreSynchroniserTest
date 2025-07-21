@@ -7,6 +7,8 @@ import (
 	"io"
 	"net/http"
 	"os"
+
+	"pythagoreSynchroniser/logging"
 	"pythagoreSynchroniser/models"
 )
 
@@ -62,6 +64,6 @@ func SendInvoiceToFNE(invoice models.FNEInvoiceRequest, token string) (string, s
 		return "", "", fmt.Errorf("failed to parse response: %w", err)
 	}
 
-	fmt.Printf("Facture certifiée : ref=%s, QR token=%s\n", response.Reference, response.Token)
+	logging.Infof("Facture certifiée : ref=%s, QR token=%s", response.Reference, response.Token)
 	return response.Reference, response.Token, nil
 }

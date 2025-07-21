@@ -10,6 +10,16 @@
         <div class="container my-5">
             <h1 class="mb-4 text-center">📊 Tableau de bord - Factures FNE</h1>
 
+            <h2 class="mt-4">État de l'application</h2>
+            <ul class="list-group mb-4">
+                <li class="list-group-item">Uptime : {{.Uptime}}</li>
+                <li class="list-group-item">Dernière synchronisation : {{.LastSync}}</li>
+                <li class="list-group-item">Durée dernière synchro : {{.LastSyncDuration}}</li>
+                <li class="list-group-item">Goroutines : {{.Goroutines}}</li>
+                <li class="list-group-item">Mémoire utilisée : {{.MemoryAlloc}}</li>
+                <li class="list-group-item">Cycles GC : {{.NumGC}}</li>
+            </ul>
+
             <div class="row g-3">
                 <div class="col-md-4">
                     <div class="card shadow-sm">
