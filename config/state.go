@@ -1,11 +1,12 @@
 package config
 
 import (
-	"encoding/json"
-	"os"
+        "encoding/json"
+        "os"
+        "path/filepath"
 )
 
-const stateFile = "sync_state.json"
+const stateFile = "data/sync_state.json"
 
 type syncState struct {
 	LastID int `json:"last_id"`
@@ -26,10 +27,13 @@ func LoadLastID() int {
 
 // SaveLastID enregistre l'identifiant de la derniere facture traitee.
 func SaveLastID(id int) error {
-	s := syncState{LastID: id}
-	b, err := json.Marshal(s)
-	if err != nil {
-		return err
-	}
-	return os.WriteFile(stateFile, b, 0644)
+        s := syncState{LastID: id}
+        b, err := json.Marshal(s)
+        if err != nil {
+                return err
+        }
+        if err := os.MkdirAll(filepath.Dir(stateFile), 0755); err != nil {
+                return err
+        }
+        return os.WriteFile(stateFile, b, 0644)
 }
