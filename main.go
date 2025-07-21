@@ -2,49 +2,51 @@ package main
 
 import (
 	"context"
-	"log"
 	"net/http"
 	"os"
 	"os/signal"
+	"time"
+
 	"pythagoreSynchroniser/config"
 	"pythagoreSynchroniser/db"
+	"pythagoreSynchroniser/logging"
 	"pythagoreSynchroniser/metrics"
 	"pythagoreSynchroniser/services"
-	"time"
 )
 
 func main() {
 	config.Load()
+	logging.Setup()
 
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
 
 	sqlDB, err := db.ConnectSQL(ctx)
 	if err != nil {
-		log.Fatalf("connexion SQL: %v", err)
+		logging.Fatalln("connexion SQL:", err)
 	}
 	defer sqlDB.Close()
 
 	go func() {
 		http.HandleFunc("/", metrics.DashboardHandler(sqlDB))
-		log.Println("Dashboard disponible sur :8080")
+		logging.Infof("Dashboard disponible sur :8080")
 		if err := http.ListenAndServe(":8080", nil); err != nil {
-			log.Printf("serveur HTTP: %v", err)
+			logging.Errorf("serveur HTTP: %v", err)
 		}
 	}()
 
 	conn, err := db.Connect(ctx)
 	if err != nil {
-		log.Fatalf("Erreur de connexion à la base de données : %v", err)
+		logging.Fatalln("Erreur de connexion à la base de données:", err)
 	}
 	defer func() {
 		if err := conn.Close(ctx); err != nil {
-			log.Printf("fermeture de la connexion : %v", err)
+			logging.Errorf("fermeture de la connexion : %v", err)
 		}
 	}()
 
-	log.Println("Connexion PostgreSQL établie.")
-	log.Println("Démarrage du synchroniseur...")
+	logging.Infof("Connexion PostgreSQL établie.")
+	logging.Infof("Démarrage du synchroniseur...")
 
 	ticker := time.NewTicker(config.SyncInterval())
 	defer ticker.Stop()
@@ -54,28 +56,29 @@ func main() {
 	for {
 		select {
 		case <-ctx.Done():
-			log.Println("Arrêt demandé, fermeture...")
+			logging.Warnf("Arrêt demandé, fermeture...")
 			return
 		case <-ticker.C:
+			start := time.Now()
 			invoices, err := db.FetchInvoicesAfterID(ctx, conn, lastID)
 			if len(invoices) == 0 {
-				log.Printf("Aucune nouvelle facture.")
+				logging.Debugf("Aucune nouvelle facture.")
 				continue
 			}
 			if err != nil {
-				log.Printf("erreur récupération factures: %v", err)
+				logging.Errorf("erreur récupération factures: %v", err)
 				continue
 			}
 
 			for _, inv := range invoices {
 				req, err := services.ConvertInvoice(inv)
 				if err != nil {
-					log.Printf("conversion facture %d: %v", inv.ID, err)
+					logging.Errorf("conversion facture %d: %v", inv.ID, err)
 					continue
 				}
 				ref, token, err := services.SendInvoiceToFNE(req, "")
 				if err != nil {
-					log.Printf("envoi FNE facture %d: %v", inv.ID, err)
+					logging.Errorf("envoi FNE facture %d: %v", inv.ID, err)
 					//continue
 				}
 				if err := config.AppendMetadata(config.InvoiceMetadata{
@@ -83,7 +86,7 @@ func main() {
 					Reference: ref,
 					Token:     token,
 				}); err != nil {
-					log.Printf("sauvegarde metadata facture %d: %v", inv.ID, err)
+					logging.Errorf("sauvegarde metadata facture %d: %v", inv.ID, err)
 				}
 				if inv.ID > lastID {
 					lastID = inv.ID
@@ -91,8 +94,9 @@ func main() {
 			}
 
 			if err := config.SaveLastID(lastID); err != nil {
-				log.Printf("sauvegarde etat: %v", err)
+				logging.Errorf("sauvegarde etat: %v", err)
 			}
+			metrics.RecordSync(time.Since(start))
 		}
 	}
 }

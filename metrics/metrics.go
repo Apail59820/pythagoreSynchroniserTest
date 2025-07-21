@@ -5,6 +5,7 @@ import (
 	"html/template"
 	"net/http"
 	"pythagoreSynchroniser/config"
+	"runtime"
 	"time"
 )
 
@@ -18,6 +19,18 @@ type FneMetrics struct {
 	SuccessRate     float64
 	AvgSendTime     time.Duration
 	LastInvoiceID   int
+}
+
+// DashboardMetrics représente les métriques globales affichées
+// sur le tableau de bord HTTP.
+type DashboardMetrics struct {
+	FneMetrics
+	Uptime           time.Duration
+	LastSync         time.Time
+	LastSyncDuration time.Duration
+	Goroutines       int
+	MemoryAlloc      uint64
+	NumGC            uint32
 }
 
 // CollectFneMetrics calcule les statistiques d'envoi FNE.
@@ -93,12 +106,32 @@ func CollectFneMetrics(db *sql.DB) (FneMetrics, error) {
 	return m, nil
 }
 
+// CollectDashboardMetrics combine les statistiques FNE avec celles de
+// l'application elle-même.
+func CollectDashboardMetrics(db *sql.DB) (DashboardMetrics, error) {
+	fne, err := CollectFneMetrics(db)
+	if err != nil {
+		return DashboardMetrics{}, err
+	}
+	var mem runtime.MemStats
+	runtime.ReadMemStats(&mem)
+	return DashboardMetrics{
+		FneMetrics:       fne,
+		Uptime:           time.Since(StartTime),
+		LastSync:         LastSync,
+		LastSyncDuration: LastSyncDuration,
+		Goroutines:       runtime.NumGoroutine(),
+		MemoryAlloc:      mem.Alloc,
+		NumGC:            mem.NumGC,
+	}, nil
+}
+
 var dashboardTmpl = template.Must(template.ParseFiles("templates/metrics.html"))
 
 // DashboardHandler renvoie un handler HTTP affichant les métriques.
 func DashboardHandler(db *sql.DB) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		m, err := CollectFneMetrics(db)
+		m, err := CollectDashboardMetrics(db)
 		if err != nil {
 			http.Error(w, err.Error(), http.StatusInternalServerError)
 			return

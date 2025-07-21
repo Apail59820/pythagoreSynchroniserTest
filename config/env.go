@@ -2,16 +2,17 @@ package config
 
 import (
 	"github.com/joho/godotenv"
-	"log"
 	"os"
 	"strconv"
 	"time"
+
+	"pythagoreSynchroniser/logging"
 )
 
 // Load charge les variables d'environnement depuis un fichier .env s'il existe.
 func Load() {
 	if err := godotenv.Load(); err != nil {
-		log.Println("Aucun fichier .env trouvé, on utilise les variables d'environnement système")
+		logging.Infof("Aucun fichier .env trouvé, on utilise les variables d'environnement système")
 	}
 }
 
@@ -22,7 +23,7 @@ func SyncInterval() time.Duration {
 		if secs, err := strconv.Atoi(v); err == nil && secs > 0 {
 			return time.Duration(secs) * time.Second
 		}
-		log.Printf("intervalle invalide %q, utilisation de la valeur par défaut", v)
+		logging.Warnf("intervalle invalide %q, utilisation de la valeur par défaut", v)
 	}
 	return 10 * time.Second
 }
