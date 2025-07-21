@@ -33,24 +33,15 @@ func main() {
 	ticker := time.NewTicker(config.SyncInterval())
 	defer ticker.Stop()
 
+	lastID := config.LoadLastID()
+
 	for {
 		select {
 		case <-ctx.Done():
 			log.Println("Arrêt demandé, fermeture...")
 			return
 		case <-ticker.C:
-			start, err := config.StartDate()
-			if err != nil {
-				log.Printf("date de début: %v", err)
-				continue
-			}
-			end, err := config.EndDate()
-			if err != nil {
-				log.Printf("date de fin: %v", err)
-				continue
-			}
-
-			invoices, err := db.FetchInvoicesBetween(ctx, conn, start, end)
+			invoices, err := db.FetchInvoicesAfterID(ctx, conn, lastID)
 			if err != nil {
 				log.Printf("erreur récupération factures: %v", err)
 				continue
@@ -63,6 +54,13 @@ func main() {
 					continue
 				}
 				log.Println(string(b))
+				if inv.ID > lastID {
+					lastID = inv.ID
+				}
+			}
+
+			if err := config.SaveLastID(lastID); err != nil {
+				log.Printf("sauvegarde etat: %v", err)
 			}
 		}
 	}
